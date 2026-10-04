@@ -8,7 +8,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden}
 body{
-font-family:Arial,Helvetica,sans-serif;display:flex;justify-content:center;align-items:center;
+font-family:Georgia,"Times New Roman",serif;display:flex;justify-content:center;align-items:center;
 color:white;background:
 radial-gradient(circle at 50% 25%,rgba(220,255,226,.95),rgba(150,220,160,.55) 24%,transparent 48%),
 radial-gradient(circle at 10% 90%,rgba(205,255,215,.5),transparent 35%),
@@ -90,9 +90,9 @@ box-shadow:0 20px 60px rgba(0,0,0,.3);animation:pop .3s ease}
 
 <script>
 const canvas=document.getElementById('wheel'),ctx=canvas.getContext('2d');
-const prizes=['500.000đ','1.000.000đ','2.000.000đ','3.000.000đ','5.000.000đ','7.000.000đ','8.000.000đ','10.000.000đ'];
-const probabilities=[40,30,30,0,0,0,0,0];
-const colors=['#dcefd0','#4d9b4f','#dcefd0','#4d9b4f','#dcefd0','#4d9b4f','#dcefd0','#4d9b4f'];
+const prizes=['500.000đ','2.000.000đ','1.000.000đ','5.000.000đ','500.000đ','2.000.000đ','1.000.000đ','10.000.000đ','500.000đ','2.000.000đ','1.000.000đ','7.000.000đ'];
+const probabilities=[40,30,30,0,40,30,30,0,40,30,30,0];
+const colors=['#dcefd0','#4d9b4f','#dcefd0','#4d9b4f','#dcefd0','#4d9b4f','#dcefd0','#4d9b4f','#dcefd0','#4d9b4f','#dcefd0','#4d9b4f'];
 let rotation=0,spinning=false;
 
 function resize(){
@@ -130,7 +130,7 @@ function drawMoneyIcon(x,y,size,light){
 
   // Góc tờ tiền
   ctx.fillStyle=pale;
-  ctx.font=`700 ${size*.18}px Arial`;
+  ctx.font=`700 ${size*.18}px Georgia`;
   ctx.textAlign='center';
   ctx.textBaseline='middle';
   ctx.fillText('$',-w*.34,-h*.22);
@@ -143,7 +143,7 @@ function drawMoneyIcon(x,y,size,light){
   ctx.fill();
 
   ctx.fillStyle='#fff8cf';
-  ctx.font=`900 ${size*.34}px Arial`;
+  ctx.font=`900 ${size*.34}px Georgia`;
   ctx.fillText('$',0,1);
 
   ctx.restore();
@@ -174,8 +174,16 @@ ctx.translate(cx,cy);
 ctx.textAlign='center';
 ctx.textBaseline='middle';
 ctx.fillStyle=i%2===0?'#17652d':'#fff';
-const fontSize=Math.max(17,Math.min(27,canvas.width/27));
-ctx.font=`900 ${fontSize}px Arial`;
+// TỰ ĐỘNG FIT CHỮ THEO BỀ RỘNG THỰC CỦA TỪNG Ô.
+// Quan trọng: canvas đang render x2 nên không dùng canvas.width trực tiếp
+// để tính font, tránh chữ bị phóng quá to trên điện thoại.
+let fontSize=Math.min(27, canvas.width/54);
+const maxTextWidth=r*2*Math.sin(slice/2)*0.72;
+ctx.font=`900 ${fontSize}px Georgia`;
+while(fontSize>11 && ctx.measureText(prizes[i]).width>maxTextWidth){
+  fontSize-=0.5;
+  ctx.font=`900 ${fontSize}px Georgia`;
+}
 ctx.shadowColor='rgba(0,0,0,.14)';
 ctx.shadowBlur=3;
 ctx.fillText(prizes[i],tx,ty);
@@ -183,10 +191,10 @@ ctx.shadowBlur=0;
 
 // ICON TIỀN MẶC ĐỊNH: luôn nằm ngay BÊN DƯỚI số tiền,
 // căn giữa theo cùng một trục X, không xoay theo ô.
-const iconGap = Math.max(22, fontSize * 1.25);
+const iconGap = Math.max(18, fontSize * 1.18);
 const ix = tx;
 const iy = ty + iconGap;
-const iconSize = Math.max(18, Math.min(27, canvas.width / 37));
+const iconSize = Math.max(15, Math.min(24, canvas.width / 54));
 drawMoneyIcon(ix, iy, iconSize, i%2===0);
 ctx.restore();
 }
