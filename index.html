@@ -101,24 +101,103 @@ canvas.width=s*2;canvas.height=s*2;canvas.style.width=s+'px';canvas.style.height
 }
 window.addEventListener('resize',resize);
 
+function drawMoneyIcon(x,y,size,light){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.shadowColor='rgba(0,55,20,.20)';
+  ctx.shadowBlur=size*.16;
+
+  const w=size*1.55, h=size*.82;
+  const green=light ? '#4f9b4b' : '#d9f0c8';
+  const dark=light ? '#2e7337' : '#4f9650';
+  const pale=light ? '#9ed183' : '#eef8e6';
+
+  // Tờ tiền đô la
+  ctx.fillStyle=green;
+  ctx.strokeStyle=dark;
+  ctx.lineWidth=Math.max(1.5,size*.055);
+  ctx.beginPath();
+  ctx.roundRect(-w/2,-h/2,w,h,size*.13);
+  ctx.fill();ctx.stroke();
+
+  // Họa tiết viền bên trong
+  ctx.shadowBlur=0;
+  ctx.strokeStyle=pale;
+  ctx.lineWidth=Math.max(1,size*.035);
+  ctx.beginPath();
+  ctx.roundRect(-w*.40,-h*.32,w*.80,h*.64,size*.08);
+  ctx.stroke();
+
+  // Góc tờ tiền
+  ctx.fillStyle=pale;
+  ctx.font=`700 ${size*.18}px Arial`;
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('$',-w*.34,-h*.22);
+  ctx.fillText('$', w*.34, h*.22);
+
+  // Hình tròn + $
+  ctx.fillStyle=dark;
+  ctx.beginPath();
+  ctx.arc(0,0,size*.25,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle='#fff8cf';
+  ctx.font=`900 ${size*.34}px Arial`;
+  ctx.fillText('$',0,1);
+
+  ctx.restore();
+}
 function draw(){
 const cx=canvas.width/2,cy=canvas.height/2,r=canvas.width/2-12,slice=Math.PI*2/prizes.length;
 ctx.clearRect(0,0,canvas.width,canvas.height);
-ctx.beginPath();ctx.arc(cx,cy,r+4,0,Math.PI*2);ctx.fillStyle='#17652d';ctx.fill();
+
+// Viền xanh đậm + viền vàng mảnh, tạo cảm giác cao cấp
+ctx.beginPath();ctx.arc(cx,cy,r+8,0,Math.PI*2);ctx.fillStyle='#0f5428';ctx.fill();
+ctx.beginPath();ctx.arc(cx,cy,r+4,0,Math.PI*2);ctx.strokeStyle='#d8b24a';ctx.lineWidth=Math.max(3,canvas.width/150);ctx.stroke();
+ctx.beginPath();ctx.arc(cx,cy,r-4,0,Math.PI*2);ctx.strokeStyle='rgba(255,248,190,.55)';ctx.lineWidth=Math.max(2,canvas.width/260);ctx.stroke();
+
 for(let i=0;i<prizes.length;i++){
 const a=rotation+i*slice,b=a+slice;
 ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a,b);ctx.closePath();
 ctx.fillStyle=colors[i];ctx.fill();ctx.strokeStyle='#276f35';ctx.lineWidth=5;ctx.stroke();
-ctx.save();ctx.translate(cx,cy);ctx.rotate(a+slice/2);ctx.textAlign='right';
-ctx.fillStyle=i%2===0?'#17652d':'#fff';ctx.font=`900 ${Math.max(17,canvas.width/39)}px Arial`;
-ctx.fillText(prizes[i],r-28,7);ctx.restore();
-}
-for(let i=0;i<32;i++){
-const a=i*Math.PI*2/32,x=cx+Math.cos(a)*(r+1),y=cy+Math.sin(a)*(r+1);
-ctx.beginPath();ctx.arc(x,y,canvas.width/105,0,Math.PI*2);ctx.fillStyle='#fff6b0';ctx.shadowColor='#fff8b0';ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
-}
+ctx.save();
+const mid=a+slice/2;
+
+// Tọa độ theo tâm ô, nhưng KHÔNG xoay chữ.
+// Nhờ vậy số tiền luôn nằm ngang, dễ đọc trên điện thoại.
+const textRadius=r*.66;
+const tx=Math.cos(mid)*textRadius;
+const ty=Math.sin(mid)*textRadius;
+
+ctx.translate(cx,cy);
+ctx.textAlign='center';
+ctx.textBaseline='middle';
+ctx.fillStyle=i%2===0?'#17652d':'#fff';
+const fontSize=Math.max(17,Math.min(27,canvas.width/27));
+ctx.font=`900 ${fontSize}px Arial`;
+ctx.shadowColor='rgba(0,0,0,.14)';
+ctx.shadowBlur=3;
+ctx.fillText(prizes[i],tx,ty);
+ctx.shadowBlur=0;
+
+// ICON TIỀN MẶC ĐỊNH: luôn nằm ngay BÊN DƯỚI số tiền,
+// căn giữa theo cùng một trục X, không xoay theo ô.
+const iconGap = Math.max(22, fontSize * 1.25);
+const ix = tx;
+const iy = ty + iconGap;
+const iconSize = Math.max(18, Math.min(27, canvas.width / 37));
+drawMoneyIcon(ix, iy, iconSize, i%2===0);
+ctx.restore();
 }
 
+// Bóng đèn quanh viền
+for(let i=0;i<32;i++){
+const a=i*Math.PI*2/32,x=cx+Math.cos(a)*(r+1),y=cy+Math.sin(a)*(r+1);
+ctx.beginPath();ctx.arc(x,y,canvas.width/105,0,Math.PI*2);
+ctx.fillStyle='#fff6b0';ctx.shadowColor='#fff8b0';ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
+}
+}
 function winner(){
 let x=Math.random()*100,sum=0;
 for(let i=0;i<probabilities.length;i++){sum+=probabilities[i];if(x<sum)return i}
